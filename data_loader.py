@@ -36,10 +36,10 @@ def read_and_decode_3frames(filename_queue, im_size=(512, 512, 1)):
     features = tf.compat.v1.parse_single_example(
       single_example,
       features={
-        'frameA': tf.io.FixedLenFeature([], tf.uint8),
-        'frameB': tf.io.FixedLenFeature([], tf.uint8),
-        'frameC': tf.io.FixedLenFeature([], tf.uint8),
-        'amplified': tf.io.FixedLenFeature([], tf.uint8),
+        'frameA': tf.io.FixedLenFeature([], tf.int64),
+        'frameB': tf.io.FixedLenFeature([], tf.int64),
+        'frameC': tf.io.FixedLenFeature([], tf.int64),
+        'amplified': tf.io.FixedLenFeature([], tf.int64),
         'amplification_factor': tf.io.FixedLenFeature([], tf.float32),
         })
     frameA = tf.image.decode_image(features['frameA'], dtype = tf.uint8)
