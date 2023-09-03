@@ -156,7 +156,7 @@ class MagNet3Frames(object):
             loader = self.saver
         print(" [*] Reading checkpoint...")
         if os.path.isdir(checkpoint_dir):
-            ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+            ckpt = tf.compat.v1.train.get_checkpoint_state(checkpoint_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 ckpt_name = ckpt.model_checkpoint_path
             else:
@@ -394,7 +394,7 @@ class MagNet3Frames(object):
             ginit_op = tf.compat.v1.global_variables_initializer()
             linit_op = tf.compat.v1.local_variables_initializer()
             self.sess.run([ginit_op, linit_op])
-
+            
             if self.load(checkpoint_dir):
                 print("[*] Load Success")
             else:
@@ -514,12 +514,11 @@ class MagNet3Frames(object):
     # Training code.
     def _build_training_graph(self, train_config):
         self.global_step = tf.Variable(0, trainable=False)
-        file_paths = [os.path.join(train_config["dataset_dir"], 'train.tfrecords')]
-        dataset = tf.data.TFRecordDataset(file_paths)
-        filename_queue = tf.train.string_input_producer(
+        print(train_config["num_epochs"])
+        filename_queue = tf.compat.v1.train.string_input_producer(
                             [os.path.join(train_config["dataset_dir"],
                                           'train.tfrecords')],
-                            num_epochs=train_config["num_epochs"])
+                            num_epochs=100)#train_config["num_epochs"]
         frameA, frameB, frameC, frameAmp, amplification_factor = \
             read_and_decode_3frames(filename_queue,
                                     (train_config["image_height"],
@@ -531,7 +530,7 @@ class MagNet3Frames(object):
             (num_threads + 2) * train_config["batch_size"]
 
         frameA, frameB, frameC, frameAmp, amplification_factor = \
-            tf.train.shuffle_batch([frameA,
+            tf.compat.v1.train.shuffle_batch([frameA,
                                     frameB,
                                     frameC,
                                     frameAmp,
@@ -552,7 +551,7 @@ class MagNet3Frames(object):
                                              [train_config["image_height"],
                                               train_config["image_width"]],
                                              self.arch_config, True, False)
-        self.reg_loss = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        self.reg_loss = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.REGULARIZATION_LOSSES)
         if self.reg_loss and train_config["weight_decay"] > 0.0:
             print("Adding Regularization Weights.")
             self.loss = self.loss_function(self.output, frameAmp) + \
@@ -593,9 +592,8 @@ class MagNet3Frames(object):
                                                                    frameA],
                                                                   axis=3),
                                                         max_outputs=2)
-        self.saver = tf.train.Saver(max_to_keep=train_config["ckpt_to_keep"])
-
-    # Loss function
+        self.saver = tf.compat.v1.train.Saver(max_to_keep=train_config["ckpt_to_keep"])
+  # Loss function
     def _loss_function(self, a, b, train_config):
         # Use train_config to implement more advance losses.
         with tf.compat.v1.variable_scope("loss_function"):
@@ -605,35 +603,35 @@ class MagNet3Frames(object):
         # Define training graphs
         self._build_training_graph(train_config)
 
-        self.lr = tf.train.exponential_decay(train_config["learning_rate"],
+        self.lr = tf.compat.v1.train.exponential_decay(train_config["learning_rate"],
                                              self.global_step,
                                              train_config["decay_steps"],
                                              train_config["lr_decay"],
                                              staircase=True)
-        self.optim_op = tf.train.AdamOptimizer(self.lr,
+        self.optim_op = tf.compat.v1.train.AdamOptimizer(self.lr,
                                                beta1=train_config["beta1"]) \
             .minimize(self.loss,
-                      var_list=tf.trainable_variables(),
+                      var_list=tf.compat.v1.trainable_variables(),
                       global_step=self.global_step)
 
         ginit_op = tf.compat.v1.global_variables_initializer()
         linit_op = tf.compat.v1.local_variables_initializer()
         self.sess.run([ginit_op, linit_op])
 
-        self.writer = tf.summary.FileWriter(train_config["logs_dir"],
+        self.writer = tf.compat.v1.summary.FileWriter(train_config["logs_dir"],
                                             self.sess.graph)
         coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(sess=self.sess, coord=coord)
+        threads = tf.compat.v1.train.start_queue_runners(sess=self.sess, coord=coord)
 
         start_time = time.time()
-        for v in tf.trainable_variables():
+        for v in tf.compat.v1.trainable_variables():
             print(v)
         if train_config["continue_train"] and \
                 self.load(train_config["checkpoint_dir"]):
             print('[*] Load Success')
         elif train_config["restore_dir"] and \
                 self.load(train_config["restore_dir"],
-                          tf.train.Saver(var_list=tf.trainable_variables())):
+                          tf.compat.v1.train.Saver(var_list=tf.compat.v1.trainable_variables())):
             self.sess.run(self.global_step.assign(0))
             print('[*] Restore success')
         else:
