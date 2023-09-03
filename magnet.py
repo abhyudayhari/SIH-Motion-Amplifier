@@ -586,15 +586,13 @@ class MagNet3Frames(object):
         )
 
     # Training code.
+    @tf.function
     def _build_training_graph(self, train_config):
         file_paths = [os.path.join(train_config["dataset_dir"], 'train.tfrecords')]
-        filename_queue = tf.data.Dataset.from_tensor_slices(file_paths).repeat(100)
+        filename_queue = tf.data.Dataset.from_tensor_slices(file_paths).shuffle(tf.shape(file_paths, out_type=tf.int64)[0]).repeat(100)
         self.global_step = tf.Variable(0, trainable=False)
-        # filename_queue =
-        # tf.compat.v1.train.string_input_producer(
-        #     [os.path.join(train_config["dataset_dir"], "train.tfrecords")],
-        #     num_epochs=100,
-        # )  # train_config["num_epochs"]
+        # filename_queue = tf.compat.v1.train.string_input_producer([os.path.join(train_config["dataset_dir"], "train.tfrecords")], num_epochs=100,
+        #   # train_config["num_epochs"]
         (
             frameA,
             frameB,

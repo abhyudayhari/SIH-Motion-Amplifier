@@ -73,8 +73,6 @@ def main(args):
             train_config = config['training']
             if not os.path.exists(train_config['checkpoint_dir']):
                 os.makedirs(train_config['checkpoint_dir'])
-            print(train_config)
-            print('hello')
             model.train(train_config)
         elif args.phase == 'run':
             model.run(checkpoint,
