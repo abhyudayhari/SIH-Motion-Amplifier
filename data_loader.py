@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 def read_and_decode(filename_queue, im_size=(512, 512, 1)):
-    writeOpts = tf.python_io.TFRecordOptions(\
+    writeOpts = tf.io.TFRecordOptions(\
             tf.python_io.TFRecordCompressionType.ZLIB)
     reader = tf.TFRecordReader(options=writeOpts)
     _, single_example = reader.read(filename_queue)
@@ -34,7 +34,7 @@ def read_and_decode_3frames(filename_queue, im_size=(512, 512, 1)):
     writeOpts = tf.io.TFRecordOptions(compression_type='ZLIB')
     reader = tf.compat.v1.TFRecordReader(options=writeOpts)
     _, single_example = reader.read(filename_queue)
-    features = tf.parse_single_example(
+    features = tf.compat.v1.parse_single_example(
       single_example,
       features={
         'frameA': tf.io.FixedLenFeature([], tf.string),
