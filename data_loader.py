@@ -8,10 +8,10 @@ def read_and_decode(filename_queue, im_size=(512, 512, 1)):
     features = tf.parse_single_example(
       single_example,
       features={
-        'frameA': tf.FixedLenFeature([], tf.string),
-        'frameB': tf.FixedLenFeature([], tf.string),
-        'amplified': tf.FixedLenFeature([], tf.string),
-        'amplification_factor': tf.FixedLenFeature([], tf.float32),
+        'frameA': tf.io.FixedLenFeature([], tf.int64),
+        'frameB': tf.io.FixedLenFeature([], tf.int64),
+        'amplified': tf.io.FixedLenFeature([], tf.int64),
+        'amplification_factor': tf.io.FixedLenFeature([], tf.float32),
         })
     frameA = tf.decode_raw(features['frameA'], tf.uint8)
     frameB = tf.decode_raw(features['frameB'], tf.uint8)
@@ -42,10 +42,10 @@ def read_and_decode_3frames(filename_queue, im_size=(512, 512, 1)):
         'amplified': tf.io.FixedLenFeature([], tf.uint8),
         'amplification_factor': tf.io.FixedLenFeature([], tf.float32),
         })
-    frameA = tf.image.decode_image(features['frameA'], tf.uint8)
-    frameB = tf.image.decode_image(features['frameB'], tf.uint8)
-    frameC = tf.image.decode_image(features['frameC'], tf.uint8)
-    frameAmp = tf.image.decode_image(features['amplified'], tf.uint8)
+    frameA = tf.image.decode_image(features['frameA'], dtype = tf.uint8)
+    frameB = tf.image.decode_image(features['frameB'], dtype = tf.uint8)
+    frameC = tf.image.decode_image(features['frameC'], dtype = tf.uint8)
+    frameAmp = tf.image.decode_image(features['amplified'], dtype = tf.uint8)
     amplification_factor = tf.cast(features['amplification_factor'], tf.float32)
 
     frameA = tf.reshape(frameA, im_size)
