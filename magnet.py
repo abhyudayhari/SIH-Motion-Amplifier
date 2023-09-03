@@ -394,7 +394,7 @@ class MagNet3Frames(object):
             ginit_op = tf.compat.v1.global_variables_initializer()
             linit_op = tf.compat.v1.local_variables_initializer()
             self.sess.run([ginit_op, linit_op])
-            
+
             if self.load(checkpoint_dir):
                 print("[*] Load Success")
             else:
@@ -514,6 +514,8 @@ class MagNet3Frames(object):
     # Training code.
     def _build_training_graph(self, train_config):
         self.global_step = tf.Variable(0, trainable=False)
+        file_paths = [os.path.join(train_config["dataset_dir"], 'train.tfrecords')]
+        dataset = tf.data.TFRecordDataset(file_paths)
         filename_queue = tf.train.string_input_producer(
                             [os.path.join(train_config["dataset_dir"],
                                           'train.tfrecords')],
